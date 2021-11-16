@@ -1,7 +1,7 @@
 package co.touchlab.kampkit
 
-import co.touchlab.kampkit.db.Breed
-import co.touchlab.kampkit.models.BreedModel
+import co.touchlab.kampkit.db.Beer
+import co.touchlab.kampkit.models.BeerUseCase
 import co.touchlab.kampkit.models.DataState
 import co.touchlab.kampkit.models.ItemDataSummary
 import co.touchlab.kermit.Logger
@@ -21,62 +21,62 @@ class NativeViewModel(
 
     private val log: Logger by injectLogger("BreedModel")
     private val scope = MainScope(Dispatchers.Main, log)
-    private val breedModel: BreedModel = BreedModel()
-    private val _breedStateFlow: MutableStateFlow<DataState<ItemDataSummary>> = MutableStateFlow(
+    private val beerUseCase: BeerUseCase = BeerUseCase()
+    private val _beerStateFlow: MutableStateFlow<DataState<ItemDataSummary>> = MutableStateFlow(
         DataState(loading = true)
     )
 
     init {
         ensureNeverFrozen()
-        observeBreeds()
+        observeBeers()
     }
 
     fun consumeError() {
-        _breedStateFlow.value = _breedStateFlow.value.copy(exception = null)
+        _beerStateFlow.value = _beerStateFlow.value.copy(exception = null)
     }
 
     @OptIn(FlowPreview::class)
-    fun observeBreeds() {
+    fun observeBeers() {
         scope.launch {
             log.v { "getBreeds: Collecting Things" }
             flowOf(
-                breedModel.refreshBreedsIfStale(true),
-                breedModel.getBreedsFromCache()
+                beerUseCase.refreshBeerIfStale(true),
+                beerUseCase.getBeerFromCache()
             ).flattenMerge().collect { dataState ->
                 if (dataState.loading) {
-                    val temp = _breedStateFlow.value.copy(loading = true)
-                    _breedStateFlow.value = temp
+                    val temp = _beerStateFlow.value.copy(loading = true)
+                    _beerStateFlow.value = temp
                 } else {
-                    _breedStateFlow.value = dataState
+                    _beerStateFlow.value = dataState
                 }
             }
         }
 
         scope.launch {
             log.v { "Exposing flow through callbacks" }
-            _breedStateFlow.collect { dataState ->
+            _beerStateFlow.collect { dataState ->
                 onDataState(dataState)
             }
         }
     }
 
-    fun refreshBreeds(forced: Boolean = false) {
+    fun refreshBeers(forced: Boolean = false) {
         scope.launch {
-            log.v { "refreshBreeds" }
-            breedModel.refreshBreedsIfStale(forced).collect { dataState ->
+            log.v { "refreshBeers" }
+            beerUseCase.refreshBeerIfStale(forced).collect { dataState ->
                 if (dataState.loading) {
-                    val temp = _breedStateFlow.value.copy(loading = true)
-                    _breedStateFlow.value = temp
+                    val temp = _beerStateFlow.value.copy(loading = true)
+                    _beerStateFlow.value = temp
                 } else {
-                    _breedStateFlow.value = dataState
+                    _beerStateFlow.value = dataState
                 }
             }
         }
     }
 
-    fun updateBreedFavorite(breed: Breed) {
+    fun updateBeerFavorite(beer: Beer) {
         scope.launch {
-            breedModel.updateBreedFavorite(breed)
+            beerUseCase.updateBeerFavorite(beer)
         }
     }
 

@@ -1,7 +1,7 @@
 package co.touchlab.kampkit.models
 
 import co.touchlab.kampkit.DatabaseHelper
-import co.touchlab.kampkit.db.Breed
+import co.touchlab.kampkit.db.Beer
 import co.touchlab.kampkit.injectLogger
 import co.touchlab.kampkit.ktor.KtorApi
 import co.touchlab.kermit.Logger
@@ -14,11 +14,11 @@ import kotlinx.datetime.Clock
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-class BreedModel : KoinComponent {
+class BeerUseCase : KoinComponent {
     private val dbHelper: DatabaseHelper by inject()
     private val settings: Settings by inject()
     private val ktorApi: KtorApi by inject()
-    private val log: Logger by injectLogger("BreedModel")
+    private val log: Logger by injectLogger("BeerUseCase")
     private val clock: Clock by inject()
 
     companion object {
@@ -29,22 +29,22 @@ class BreedModel : KoinComponent {
         ensureNeverFrozen()
     }
 
-    fun refreshBreedsIfStale(forced: Boolean = false): Flow<DataState<ItemDataSummary>> = flow {
+    fun refreshBeerIfStale(forced: Boolean = false): Flow<DataState<ItemDataSummary>> = flow {
         emit(DataState(loading = true))
         val currentTimeMS = clock.now().toEpochMilliseconds()
-        val stale = isBreedListStale(currentTimeMS)
-        val networkBreedDataState: DataState<ItemDataSummary>
+        val stale = isBeerListStale(currentTimeMS)
+        val networkBeerDataState: DataState<ItemDataSummary>
         if (stale || forced) {
-            networkBreedDataState = getBreedsFromNetwork(currentTimeMS)
-            if (networkBreedDataState.data != null) {
-                dbHelper.insertBreeds(networkBreedDataState.data.allItems)
+            networkBeerDataState = getBeersFromNetwork(currentTimeMS)
+            if (networkBeerDataState.data != null) {
+                dbHelper.insertBeers(networkBeerDataState.data.allItems)
             } else {
-                emit(networkBreedDataState)
+                emit(networkBeerDataState)
             }
         }
     }
 
-    fun getBreedsFromCache(): Flow<DataState<ItemDataSummary>> =
+    fun getBeerFromCache(): Flow<DataState<ItemDataSummary>> =
         dbHelper.selectAllItems()
             .mapNotNull { itemList ->
                 if (itemList.isEmpty()) {
@@ -59,7 +59,7 @@ class BreedModel : KoinComponent {
                 }
             }
 
-    private fun isBreedListStale(currentTimeMS: Long): Boolean {
+    private fun isBeerListStale(currentTimeMS: Long): Boolean {
         val lastDownloadTimeMS = settings.getLong(DB_TIMESTAMP_KEY, 0)
         val oneHourMS = 60 * 60 * 1000
         val stale = lastDownloadTimeMS + oneHourMS < currentTimeMS
@@ -69,20 +69,19 @@ class BreedModel : KoinComponent {
         return stale
     }
 
-    suspend fun getBreedsFromNetwork(currentTimeMS: Long): DataState<ItemDataSummary> {
+    suspend fun getBeersFromNetwork(currentTimeMS: Long): DataState<ItemDataSummary> {
         return try {
-            val breedResult = ktorApi.getJsonFromApi()
-            log.v { "Breed network result: ${breedResult.status}" }
-            val breedList = breedResult.message.keys.sorted().toList()
-            log.v { "Fetched ${breedList.size} breeds from network" }
+            val beerResult = ktorApi.getJsonFromApi()
+            log.v { "Breed network result: ${beerResult.isNotEmpty()}" }
+            log.v { "Fetched ${beerResult.size} breeds from network" }
             settings.putLong(DB_TIMESTAMP_KEY, currentTimeMS)
-            if (breedList.isEmpty()) {
+            if (beerResult.isEmpty()) {
                 DataState<ItemDataSummary>(empty = true)
             } else {
                 DataState<ItemDataSummary>(
                     ItemDataSummary(
                         null,
-                        breedList.map { Breed(0L, it, 0L) }
+                        beerResult.map { Beer(0L, it.name.orEmpty(), 0L) }
                     )
                 )
             }
@@ -92,9 +91,9 @@ class BreedModel : KoinComponent {
         }
     }
 
-    suspend fun updateBreedFavorite(breed: Breed) {
-        dbHelper.updateFavorite(breed.id, breed.favorite != 1L)
+    suspend fun updateBeerFavorite(beer: Beer) {
+        dbHelper.updateFavorite(beer.id, beer.favorite != 1L)
     }
 }
 
-data class ItemDataSummary(val longestItem: Breed?, val allItems: List<Breed>)
+data class ItemDataSummary(val longestItem: Beer?, val allItems: List<Beer>)

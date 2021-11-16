@@ -1,6 +1,6 @@
 package co.touchlab.kampkit
 
-import co.touchlab.kampkit.db.Breed
+import co.touchlab.kampkit.db.Beer
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -12,9 +12,10 @@ import kotlin.test.assertTrue
 class SqlDelightTest : BaseTest() {
 
     private lateinit var dbHelper: DatabaseHelper
+    private lateinit var beers: List<Beer>
 
-    private suspend fun DatabaseHelper.insertBreed(name: String) {
-        insertBreeds(listOf(Breed(id = 1, name = name, favorite = 0L)))
+    private suspend fun DatabaseHelper.insertBeer(name: String) {
+        insertBeers(listOf(Beer(id = 1, name = name, favorite = 0L)))
     }
 
     @BeforeTest
@@ -25,48 +26,55 @@ class SqlDelightTest : BaseTest() {
             Dispatchers.Default
         )
         dbHelper.deleteAll()
-        dbHelper.insertBreed("Beagle")
+
+        beers = listOf(
+            Beer(0L, "PunkIPA", 0L),
+            Beer(0L, "PunkIPA", 0L),
+            Beer(0L, "PunkIPA", 0L),
+        )
+
+        dbHelper.insertBeers(beers)
     }
 
     @Test
     fun `Select All Items Success`() = runTest {
-        val breeds = dbHelper.selectAllItems().first()
+        val beers = dbHelper.selectAllItems().first()
         assertNotNull(
-            breeds.find { it.name == "Beagle" },
-            "Could not retrieve Breed"
+            beers.find { it.name == "PunkIPA" },
+            "Could not retrieve Beer"
         )
     }
 
     @Test
     fun `Select Item by Id Success`() = runTest {
-        val breeds = dbHelper.selectAllItems().first()
-        val firstBreed = breeds.first()
+        val beers = dbHelper.selectAllItems().first()
+        val firstBeer = beers.first()
         assertNotNull(
-            dbHelper.selectById(firstBreed.id),
-            "Could not retrieve Breed by Id"
+            dbHelper.selectById(firstBeer.id),
+            "Could not retrieve Beer by Id"
         )
     }
 
     @Test
     fun `Update Favorite Success`() = runTest {
-        val breeds = dbHelper.selectAllItems().first()
-        val firstBreed = breeds.first()
-        dbHelper.updateFavorite(firstBreed.id, true)
-        val newBreed = dbHelper.selectById(firstBreed.id).first().first()
+        val beers = dbHelper.selectAllItems().first()
+        val firstBeer = beers.first()
+        dbHelper.updateFavorite(firstBeer.id, true)
+        val newBeer = dbHelper.selectById(firstBeer.id).first().first()
         assertNotNull(
-            newBreed,
-            "Could not retrieve Breed by Id"
+            newBeer,
+            "Could not retrieve Beer by Id"
         )
         assertTrue(
-            newBreed.isFavorited(),
+            newBeer.isFavorited(),
             "Favorite Did Not Save"
         )
     }
 
     @Test
     fun `Delete All Success`() = runTest {
-        dbHelper.insertBreed("Poodle")
-        dbHelper.insertBreed("Schnauzer")
+        dbHelper.insertBeer("Poodle")
+        dbHelper.insertBeer("Schnauzer")
         assertTrue(dbHelper.selectAllItems().first().isNotEmpty())
         dbHelper.deleteAll()
 

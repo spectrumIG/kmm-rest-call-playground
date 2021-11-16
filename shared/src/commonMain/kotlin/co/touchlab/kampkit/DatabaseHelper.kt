@@ -1,6 +1,6 @@
 package co.touchlab.kampkit
 
-import co.touchlab.kampkit.db.Breed
+import co.touchlab.kampkit.db.Beer
 import co.touchlab.kampkit.db.KaMPKitDb
 import co.touchlab.kampkit.sqldelight.transactionWithContext
 import co.touchlab.kermit.Logger
@@ -18,23 +18,23 @@ class DatabaseHelper(
 ) {
     private val dbRef: KaMPKitDb = KaMPKitDb(sqlDriver)
 
-    fun selectAllItems(): Flow<List<Breed>> =
+    fun selectAllItems(): Flow<List<Beer>> =
         dbRef.tableQueries
             .selectAll()
             .asFlow()
             .mapToList()
             .flowOn(backgroundDispatcher)
 
-    suspend fun insertBreeds(breeds: List<Breed>) {
-        log.d { "Inserting ${breeds.size} breeds into database" }
+    suspend fun insertBeers(beer: List<Beer>) {
+        log.d { "Inserting ${beer.size} beers into database" }
         dbRef.transactionWithContext(backgroundDispatcher) {
-            breeds.forEach { breed ->
-                dbRef.tableQueries.insertBreed(null, breed.name)
+            beer.forEach { beer ->
+                dbRef.tableQueries.insertBeer(null, beer.name)
             }
         }
     }
 
-    suspend fun selectById(id: Long): Flow<List<Breed>> =
+    suspend fun selectById(id: Long): Flow<List<Beer>> =
         dbRef.tableQueries
             .selectById(id)
             .asFlow()
@@ -48,13 +48,13 @@ class DatabaseHelper(
         }
     }
 
-    suspend fun updateFavorite(breedId: Long, favorite: Boolean) {
-        log.i { "Breed $breedId: Favorited $favorite" }
+    suspend fun updateFavorite(beerId: Long, favorite: Boolean) {
+        log.i { "Beer $beerId: Favorited $favorite" }
         dbRef.transactionWithContext(backgroundDispatcher) {
-            dbRef.tableQueries.updateFavorite(favorite.toLong(), breedId)
+            dbRef.tableQueries.updateFavorite(favorite.toLong(), beerId)
         }
     }
 }
 
-fun Breed.isFavorited(): Boolean = this.favorite != 0L
+fun Beer.isFavorited(): Boolean = this.favorite != 0L
 internal fun Boolean.toLong(): Long = if (this) 1L else 0L

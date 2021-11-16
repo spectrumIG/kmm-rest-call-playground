@@ -1,30 +1,33 @@
 package co.touchlab.kampkit.mock
 
 import co.touchlab.kampkit.ktor.KtorApi
-import co.touchlab.kampkit.response.BreedResult
+import co.touchlab.kampkit.response.BeerResult
 
 // TODO convert this to use Ktor's MockEngine
 class KtorApiMock : KtorApi {
-    private var nextResult: () -> BreedResult = { throw error("Uninitialized!") }
+    private var nextResult: () -> List<BeerResult> = { throw error("Uninitialized!") }
     var calledCount = 0
         private set
 
-    override suspend fun getJsonFromApi(): BreedResult {
+    override suspend fun getJsonFromApi(): List<BeerResult> {
         val result = nextResult()
         calledCount++
         return result
     }
 
-    fun successResult(): BreedResult {
+    fun successResult(): List<BeerResult> {
         val map = HashMap<String, List<String>>().apply {
-            put("appenzeller", emptyList())
-            put("australian", listOf("shepherd"))
+            put("weissbier", emptyList())
+            put("punkIpa", listOf("shepherd"))
         }
-        return BreedResult(map, "success")
+        return listOf(
+            BeerResult(name = "weissbier", tagline = "A weissbier"),
+            BeerResult(name = "Punk Ipa", tagline = "A punkIpar")
+        )
     }
 
-    fun prepareResult(breedResult: BreedResult) {
-        nextResult = { breedResult }
+    fun prepareResult(beerResult: List<BeerResult>) {
+        nextResult = { beerResult }
     }
 
     fun throwOnCall(throwable: Throwable) {

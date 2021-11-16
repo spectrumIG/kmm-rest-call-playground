@@ -1,6 +1,6 @@
 package co.touchlab.kampkit.ktor
 
-import co.touchlab.kampkit.response.BreedResult
+import co.touchlab.kampkit.response.BeerResult
 import co.touchlab.kermit.Logger
 import co.touchlab.stately.ensureNeverFrozen
 import io.ktor.client.HttpClient
@@ -12,6 +12,7 @@ import io.ktor.client.features.logging.Logging
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.http.takeFrom
+import kotlinx.serialization.json.Json
 import io.ktor.client.features.logging.Logger as KtorLogger
 
 class DogApiImpl(log: Logger) : KtorApi {
@@ -23,7 +24,15 @@ class DogApiImpl(log: Logger) : KtorApi {
 
     private val client = HttpClient {
         install(JsonFeature) {
-            serializer = KotlinxSerializer()
+
+            serializer = KotlinxSerializer(
+                Json {
+                    isLenient = false
+                    ignoreUnknownKeys = true
+                    allowSpecialFloatingPointValues = true
+                    useArrayPolymorphism = false
+                }
+            )
         }
         install(Logging) {
             logger = object : KtorLogger {
@@ -46,16 +55,16 @@ class DogApiImpl(log: Logger) : KtorApi {
         ensureNeverFrozen()
     }
 
-    override suspend fun getJsonFromApi(): BreedResult {
-        log.d { "Fetching Breeds from network" }
-        return client.get<BreedResult> {
-            dogs("api/breeds/list/all")
+    override suspend fun getJsonFromApi(): List<BeerResult> {
+        log.d { "Fetching Beer from network" }
+        return client.get<List<BeerResult>> {
+            dogs("v2/beers")
         }
     }
 
     private fun HttpRequestBuilder.dogs(path: String) {
         url {
-            takeFrom("https://dog.ceo/")
+            takeFrom("https://api.punkapi.com/")
             encodedPath = path
         }
     }

@@ -12,14 +12,14 @@ import shared
 // swiftlint:disable force_cast
 private let log = koin.loggerWithTag(tag: "ViewController")
 
-class ObservableBreedModel: ObservableObject {
+class ObservableBeerModel: ObservableObject {
     private var viewModel: NativeViewModel?
 
     @Published
     var loading = false
 
     @Published
-    var breeds: [Breed]?
+    var beers: [Beer]?
 
     @Published
     var error: String?
@@ -27,11 +27,11 @@ class ObservableBreedModel: ObservableObject {
     func activate() {
         viewModel = NativeViewModel { [weak self] dataState in
             self?.loading = dataState.loading
-            self?.breeds = dataState.data?.allItems
+            self?.beers = dataState.data?.allItems
             self?.error = dataState.exception
 
-            if let breeds = dataState.data?.allItems {
-                log.d(message: {"View updating with \(breeds.count) breeds"})
+            if let beers = dataState.data?.allItems {
+                log.d(message: {"View updating with \(beers.count) beers"})
             }
             if let errorMessage = dataState.exception {
                 log.e(message: {"Displaying error: \(errorMessage)"})
@@ -44,25 +44,25 @@ class ObservableBreedModel: ObservableObject {
         viewModel = nil
     }
 
-    func onBreedFavorite(_ breed: Breed) {
-        viewModel?.updateBreedFavorite(breed: breed)
+    func onBeerFavorite(_ beer: Beer) {
+        viewModel?.updateBeerFavorite(beer: beer)
     }
 
     func refresh() {
-        viewModel?.refreshBreeds(forced: true)
+        viewModel?.refreshBeers(forced: true)
     }
 }
 
-struct BreedListScreen: View {
+struct BeerListScreen: View {
     @ObservedObject
-    var observableModel = ObservableBreedModel()
+    var observableModel = ObservableBeerModel()
 
     var body: some View {
-        BreedListContent(
+        BeerListContent(
             loading: observableModel.loading,
-            breeds: observableModel.breeds,
+            beers: observableModel.beers,
             error: observableModel.error,
-            onBreedFavorite: { observableModel.onBreedFavorite($0) },
+            onBeerFavorite: { observableModel.onBeerFavorite($0) },
             refresh: { observableModel.refresh() }
         )
         .onAppear(perform: {
@@ -74,20 +74,20 @@ struct BreedListScreen: View {
     }
 }
 
-struct BreedListContent: View {
+struct BeerListContent: View {
     var loading: Bool
-    var breeds: [Breed]?
+    var beers: [Beer]?
     var error: String?
-    var onBreedFavorite: (Breed) -> Void
+    var onBeerFavorite: (Beer) -> Void
     var refresh: () -> Void
 
     var body: some View {
         ZStack {
             VStack {
-                if let breeds = breeds {
-                    List(breeds, id: \.id) { breed in
-                        BreedRowView(breed: breed) {
-                            onBreedFavorite(breed)
+                if let beers = beers {
+                    List(beers, id: \.id) { beer in
+                        BeerRowView(beer: beer) {
+                            onBeerFavorite(beer)
                         }
                     }
                 }
@@ -104,33 +104,33 @@ struct BreedListContent: View {
     }
 }
 
-struct BreedRowView: View {
-    var breed: Breed
+struct BeerRowView: View {
+    var beer: Beer
     var onTap: () -> Void
 
     var body: some View {
         Button(action: onTap) {
             HStack {
-                Text(breed.name)
+                Text(beer.name)
                     .padding(4.0)
                 Spacer()
-                Image(systemName: (breed.favorite == 0) ? "heart" : "heart.fill")
+                Image(systemName: (beer.favorite == 0) ? "heart" : "heart.fill")
                     .padding(4.0)
             }
         }
     }
 }
 
-struct BreedListScreen_Previews: PreviewProvider {
+struct BeerListScreen_Previews: PreviewProvider {
     static var previews: some View {
-        BreedListContent(
+        BeerListContent(
             loading: false,
-            breeds: [
-                Breed(id: 0, name: "appenzeller", favorite: 0),
-                Breed(id: 1, name: "australian", favorite: 1)
+            beers: [
+                Beer(id: 0, name: "appenzeller", favorite: 0),
+                Beer(id: 1, name: "australian", favorite: 1)
             ],
             error: nil,
-            onBreedFavorite: { _ in },
+            onBeerFavorite: { _ in },
             refresh: {}
         )
     }

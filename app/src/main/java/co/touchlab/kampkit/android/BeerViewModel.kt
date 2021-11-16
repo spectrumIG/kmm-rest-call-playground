@@ -2,9 +2,9 @@ package co.touchlab.kampkit.android
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import co.touchlab.kampkit.db.Breed
+import co.touchlab.kampkit.db.Beer
 import co.touchlab.kampkit.injectLogger
-import co.touchlab.kampkit.models.BreedModel
+import co.touchlab.kampkit.models.BeerUseCase
 import co.touchlab.kampkit.models.DataState
 import co.touchlab.kampkit.models.ItemDataSummary
 import co.touchlab.kermit.Logger
@@ -17,11 +17,11 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
-class BreedViewModel : ViewModel(), KoinComponent {
+class BeerViewModel : ViewModel(), KoinComponent {
 
     private val log: Logger by injectLogger("BreedViewModel")
     private val scope = viewModelScope
-    private val breedModel: BreedModel = BreedModel()
+    private val beerUseCase: BeerUseCase = BeerUseCase()
     private val _breedStateFlow: MutableStateFlow<DataState<ItemDataSummary>> = MutableStateFlow(
         DataState(loading = true)
     )
@@ -37,8 +37,8 @@ class BreedViewModel : ViewModel(), KoinComponent {
         scope.launch {
             log.v { "getBreeds: Collecting Things" }
             flowOf(
-                breedModel.refreshBreedsIfStale(true),
-                breedModel.getBreedsFromCache()
+                beerUseCase.refreshBeerIfStale(true),
+                beerUseCase.getBeerFromCache()
             ).flattenMerge().collect { dataState ->
                 if (dataState.loading) {
                     val temp = _breedStateFlow.value.copy(loading = true)
@@ -53,7 +53,7 @@ class BreedViewModel : ViewModel(), KoinComponent {
     fun refreshBreeds(forced: Boolean = false) {
         scope.launch {
             log.v { "refreshBreeds" }
-            breedModel.refreshBreedsIfStale(forced).collect { dataState ->
+            beerUseCase.refreshBeerIfStale(forced).collect { dataState ->
                 if (dataState.loading) {
                     val temp = _breedStateFlow.value.copy(loading = true)
                     _breedStateFlow.value = temp
@@ -64,9 +64,9 @@ class BreedViewModel : ViewModel(), KoinComponent {
         }
     }
 
-    fun updateBreedFavorite(breed: Breed) {
+    fun updateBreedFavorite(beer: Beer) {
         scope.launch {
-            breedModel.updateBreedFavorite(breed)
+            beerUseCase.updateBeerFavorite(beer)
         }
     }
 }

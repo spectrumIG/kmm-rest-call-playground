@@ -1,7 +1,7 @@
 package co.touchlab.kampkit.ktor
 
-import co.touchlab.kampkit.response.BreedResult
+import co.touchlab.kampkit.response.BeerResult
 
 interface KtorApi {
-    suspend fun getJsonFromApi(): BreedResult
+    suspend fun getJsonFromApi(): List<BeerResult>
 }

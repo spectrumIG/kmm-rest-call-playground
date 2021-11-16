@@ -31,9 +31,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.flowWithLifecycle
-import co.touchlab.kampkit.android.BreedViewModel
+import co.touchlab.kampkit.android.BeerViewModel
 import co.touchlab.kampkit.android.R
-import co.touchlab.kampkit.db.Breed
+import co.touchlab.kampkit.db.Beer
 import co.touchlab.kampkit.models.DataState
 import co.touchlab.kampkit.models.ItemDataSummary
 import co.touchlab.kermit.Logger
@@ -42,7 +42,7 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 @Composable
 fun MainScreen(
-    viewModel: BreedViewModel,
+    viewModel: BeerViewModel,
     log: Logger
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -59,14 +59,13 @@ fun MainScreen(
         onFavorite = { viewModel.updateBreedFavorite(it) }
     )
 }
-
 @Composable
 fun MainScreenContent(
     dogsState: DataState<ItemDataSummary>,
     onRefresh: () -> Unit = {},
     onSuccess: (ItemDataSummary) -> Unit = {},
     onError: (String) -> Unit = {},
-    onFavorite: (Breed) -> Unit = {}
+    onFavorite: (Beer) -> Unit = {}
 ) {
     Surface(
         color = MaterialTheme.colors.background,
@@ -84,7 +83,7 @@ fun MainScreenContent(
                 LaunchedEffect(data) {
                     onSuccess(data)
                 }
-                Success(successData = data, favoriteBreed = onFavorite)
+                Success(successData = data, favoriteBeer = onFavorite)
             }
             val exception = dogsState.exception
             if (exception != null) {
@@ -126,15 +125,15 @@ fun Error(error: String) {
 @Composable
 fun Success(
     successData: ItemDataSummary,
-    favoriteBreed: (Breed) -> Unit
+    favoriteBeer: (Beer) -> Unit
 ) {
-    DogList(breeds = successData.allItems, favoriteBreed)
+    DogList(beers = successData.allItems, favoriteBeer)
 }
 
 @Composable
-fun DogList(breeds: List<Breed>, onItemClick: (Breed) -> Unit) {
+fun DogList(beers: List<Beer>, onItemClick: (Beer) -> Unit) {
     LazyColumn {
-        items(breeds) { breed ->
+        items(beers) { breed ->
             DogRow(breed) {
                 onItemClick(it)
             }
@@ -144,21 +143,21 @@ fun DogList(breeds: List<Breed>, onItemClick: (Breed) -> Unit) {
 }
 
 @Composable
-fun DogRow(breed: Breed, onClick: (Breed) -> Unit) {
+fun DogRow(beer: Beer, onClick: (Beer) -> Unit) {
     Row(
         Modifier
-            .clickable { onClick(breed) }
+            .clickable { onClick(beer) }
             .padding(10.dp)
     ) {
-        Text(breed.name, Modifier.weight(1F))
-        FavoriteIcon(breed)
+        Text(beer.name, Modifier.weight(1F))
+        FavoriteIcon(beer)
     }
 }
 
 @Composable
-fun FavoriteIcon(breed: Breed) {
+fun FavoriteIcon(beer: Beer) {
     Crossfade(
-        targetState = breed.favorite == 0L,
+        targetState = beer.favorite == 0L,
         animationSpec = TweenSpec(
             durationMillis = 500,
             easing = FastOutSlowInEasing
@@ -167,12 +166,12 @@ fun FavoriteIcon(breed: Breed) {
         if (fav) {
             Image(
                 painter = painterResource(id = R.drawable.ic_favorite_border_24px),
-                contentDescription = stringResource(R.string.favorite_breed, breed.name)
+                contentDescription = stringResource(R.string.favorite_breed, beer.name)
             )
         } else {
             Image(
                 painter = painterResource(id = R.drawable.ic_favorite_24px),
-                contentDescription = stringResource(R.string.unfavorite_breed, breed.name)
+                contentDescription = stringResource(R.string.unfavorite_breed, beer.name)
             )
         }
     }
@@ -186,8 +185,8 @@ fun MainScreenContentPreview_Success() {
             data = ItemDataSummary(
                 longestItem = null,
                 allItems = listOf(
-                    Breed(0, "appenzeller", 0),
-                    Breed(1, "australian", 1)
+                    Beer(0, "appenzeller", 0),
+                    Beer(1, "australian", 1)
                 )
             )
         )
