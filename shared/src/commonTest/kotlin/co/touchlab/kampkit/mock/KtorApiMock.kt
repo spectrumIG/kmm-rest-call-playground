@@ -16,13 +16,9 @@ class KtorApiMock : KtorApi {
     }
 
     fun successResult(): List<BeerResult> {
-        val map = HashMap<String, List<String>>().apply {
-            put("weissbier", emptyList())
-            put("punkIpa", listOf("shepherd"))
-        }
         return listOf(
             BeerResult(name = "weissbier", tagline = "A weissbier"),
-            BeerResult(name = "Punk Ipa", tagline = "A punkIpar")
+            BeerResult(name = "Punk Ipa", tagline = "A Punk Ipa")
         )
     }
 

@@ -40,8 +40,8 @@ class BeerUseCaseTest : BaseTest() {
 
     companion object {
         private val weissbier = Beer(1, "weissbier", 0L)
-        private val punkIpaNoLike = Beer(2, "punkIpa", 0L)
-        private val punkIpaLike = Beer(2, "punkIpa", 1L)
+        private val punkIpaNoLike = Beer(2, "Punk Ipa", 0L)
+        private val punkIpaLike = Beer(2, "Punk Ipa", 1L)
         val dataStateSuccessNoFavorite = DataState(
             data = ItemDataSummary(weissbier, listOf(weissbier, punkIpaNoLike))
         )
@@ -130,8 +130,8 @@ class BeerUseCaseTest : BaseTest() {
         flowOf(model.refreshBeerIfStale(), model.getBeerFromCache()).flattenMerge()
             .test(timeout = Duration.seconds(30)) {
                 assertEquals(DataState(loading = true), awaitItem())
-                val oldBreeds = awaitItem()
-                val data = oldBreeds.data
+                val oldBeer = awaitItem()
+                val data = oldBeer.data
                 assertTrue(data != null)
                 assertEquals(
                     ktorApi.successResult().size,
@@ -141,16 +141,16 @@ class BeerUseCaseTest : BaseTest() {
 
         // Advance time by more than an hour to make cached data stale
         clock.currentInstant += Duration.hours(2)
-        val resultWithExtraBreed = successResult.map { it.copy(tagline = it.tagline + ("extra")) }
+        val resultWithExtraBeer = successResult.map { it.copy(tagline = it.tagline + ("extra" to emptyList<Beer>())) }
 
-        ktorApi.prepareResult(resultWithExtraBreed)
+        ktorApi.prepareResult(resultWithExtraBeer)
         flowOf(model.refreshBeerIfStale(), model.getBeerFromCache()).flattenMerge()
             .test(timeout = Duration.seconds(30)) {
                 assertEquals(DataState(loading = true), awaitItem())
                 val updated = awaitItem()
                 val data = updated.data
                 assertTrue(data != null)
-                assertEquals(resultWithExtraBreed.size, data.allItems.size)
+                assertEquals(resultWithExtraBeer.size, data.allItems.size)
             }
     }
 

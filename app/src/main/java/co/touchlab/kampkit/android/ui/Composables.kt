@@ -46,22 +46,22 @@ fun MainScreen(
     log: Logger
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
-    val lifecycleAwareDogsFlow = remember(viewModel.breedStateFlow, lifecycleOwner) {
-        viewModel.breedStateFlow.flowWithLifecycle(lifecycleOwner.lifecycle)
+    val lifecycleAwareDogsFlow = remember(viewModel.beerStateFlow, lifecycleOwner) {
+        viewModel.beerStateFlow.flowWithLifecycle(lifecycleOwner.lifecycle)
     }
-    val dogsState by lifecycleAwareDogsFlow.collectAsState(viewModel.breedStateFlow.value)
+    val dogsState by lifecycleAwareDogsFlow.collectAsState(viewModel.beerStateFlow.value)
 
     MainScreenContent(
-        dogsState = dogsState,
-        onRefresh = { viewModel.refreshBreeds(true) },
+        beerState = dogsState,
+        onRefresh = { viewModel.refreshBeer(true) },
         onSuccess = { data -> log.v { "View updating with ${data.allItems.size} breeds" } },
         onError = { exception -> log.e { "Displaying error: $exception" } },
-        onFavorite = { viewModel.updateBreedFavorite(it) }
+        onFavorite = { viewModel.updateBeerFavorite(it) }
     )
 }
 @Composable
 fun MainScreenContent(
-    dogsState: DataState<ItemDataSummary>,
+    beerState: DataState<ItemDataSummary>,
     onRefresh: () -> Unit = {},
     onSuccess: (ItemDataSummary) -> Unit = {},
     onError: (String) -> Unit = {},
@@ -72,20 +72,20 @@ fun MainScreenContent(
         modifier = Modifier.fillMaxSize()
     ) {
         SwipeRefresh(
-            state = rememberSwipeRefreshState(isRefreshing = dogsState.loading),
+            state = rememberSwipeRefreshState(isRefreshing = beerState.loading),
             onRefresh = onRefresh
         ) {
-            if (dogsState.empty) {
+            if (beerState.empty) {
                 Empty()
             }
-            val data = dogsState.data
+            val data = beerState.data
             if (data != null) {
                 LaunchedEffect(data) {
                     onSuccess(data)
                 }
                 Success(successData = data, favoriteBeer = onFavorite)
             }
-            val exception = dogsState.exception
+            val exception = beerState.exception
             if (exception != null) {
                 LaunchedEffect(exception) {
                     onError(exception)
@@ -105,7 +105,7 @@ fun Empty() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(stringResource(R.string.empty_breeds))
+        Text(stringResource(R.string.empty_beer))
     }
 }
 
@@ -166,12 +166,12 @@ fun FavoriteIcon(beer: Beer) {
         if (fav) {
             Image(
                 painter = painterResource(id = R.drawable.ic_favorite_border_24px),
-                contentDescription = stringResource(R.string.favorite_breed, beer.name)
+                contentDescription = stringResource(R.string.favorite_beer, beer.name)
             )
         } else {
             Image(
                 painter = painterResource(id = R.drawable.ic_favorite_24px),
-                contentDescription = stringResource(R.string.unfavorite_breed, beer.name)
+                contentDescription = stringResource(R.string.unfavorite_beer, beer.name)
             )
         }
     }
@@ -181,7 +181,7 @@ fun FavoriteIcon(beer: Beer) {
 @Composable
 fun MainScreenContentPreview_Success() {
     MainScreenContent(
-        dogsState = DataState(
+        beerState = DataState(
             data = ItemDataSummary(
                 longestItem = null,
                 allItems = listOf(

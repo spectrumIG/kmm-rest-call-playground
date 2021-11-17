@@ -22,18 +22,18 @@ class BeerViewModel : ViewModel(), KoinComponent {
     private val log: Logger by injectLogger("BreedViewModel")
     private val scope = viewModelScope
     private val beerUseCase: BeerUseCase = BeerUseCase()
-    private val _breedStateFlow: MutableStateFlow<DataState<ItemDataSummary>> = MutableStateFlow(
+    private val _beerStateFlow: MutableStateFlow<DataState<ItemDataSummary>> = MutableStateFlow(
         DataState(loading = true)
     )
 
-    val breedStateFlow: StateFlow<DataState<ItemDataSummary>> = _breedStateFlow
+    val beerStateFlow: StateFlow<DataState<ItemDataSummary>> = _beerStateFlow
 
     init {
-        observeBreeds()
+        observeBeer()
     }
 
     @OptIn(FlowPreview::class)
-    private fun observeBreeds() {
+    private fun observeBeer() {
         scope.launch {
             log.v { "getBreeds: Collecting Things" }
             flowOf(
@@ -41,30 +41,30 @@ class BeerViewModel : ViewModel(), KoinComponent {
                 beerUseCase.getBeerFromCache()
             ).flattenMerge().collect { dataState ->
                 if (dataState.loading) {
-                    val temp = _breedStateFlow.value.copy(loading = true)
-                    _breedStateFlow.value = temp
+                    val temp = _beerStateFlow.value.copy(loading = true)
+                    _beerStateFlow.value = temp
                 } else {
-                    _breedStateFlow.value = dataState
+                    _beerStateFlow.value = dataState
                 }
             }
         }
     }
 
-    fun refreshBreeds(forced: Boolean = false) {
+    fun refreshBeer(forced: Boolean = false) {
         scope.launch {
-            log.v { "refreshBreeds" }
+            log.v { "refreshBeer" }
             beerUseCase.refreshBeerIfStale(forced).collect { dataState ->
                 if (dataState.loading) {
-                    val temp = _breedStateFlow.value.copy(loading = true)
-                    _breedStateFlow.value = temp
+                    val temp = _beerStateFlow.value.copy(loading = true)
+                    _beerStateFlow.value = temp
                 } else {
-                    _breedStateFlow.value = dataState
+                    _beerStateFlow.value = dataState
                 }
             }
         }
     }
 
-    fun updateBreedFavorite(beer: Beer) {
+    fun updateBeerFavorite(beer: Beer) {
         scope.launch {
             beerUseCase.updateBeerFavorite(beer)
         }
