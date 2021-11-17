@@ -58,7 +58,7 @@ class DogApiImpl(log: Logger) : KtorApi {
     override suspend fun getJsonFromApi(): List<BeerResult> {
         log.d { "Fetching Beer from network" }
         return client.get<List<BeerResult>> {
-            dogs("v2/beers")
+            dogs("v2/beers?per_page=80")
         }
     }
 

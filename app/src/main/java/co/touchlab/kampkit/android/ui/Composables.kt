@@ -133,8 +133,8 @@ fun Success(
 @Composable
 fun DogList(beers: List<Beer>, onItemClick: (Beer) -> Unit) {
     LazyColumn {
-        items(beers) { breed ->
-            DogRow(breed) {
+        items(beers) { beer ->
+            DogRow(beer) {
                 onItemClick(it)
             }
             Divider()
