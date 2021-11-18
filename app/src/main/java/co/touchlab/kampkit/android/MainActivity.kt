@@ -13,7 +13,7 @@ import org.koin.core.component.KoinComponent
 class MainActivity : ComponentActivity(), KoinComponent {
 
     private val log: Logger by injectLogger("MainActivity")
-    private val viewModel: BeerViewModel by viewModel()
+    private val viewModel: AppViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,9 +21,6 @@ class MainActivity : ComponentActivity(), KoinComponent {
             KaMPKitTheme {
                 MainScreen(viewModel, log)
             }
-        }
-        if (viewModel.beerStateFlow.value.data == null) {
-            viewModel.refreshBeer()
         }
     }
 }

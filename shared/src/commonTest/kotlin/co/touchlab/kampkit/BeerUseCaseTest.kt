@@ -4,7 +4,7 @@ import app.cash.turbine.test
 import co.touchlab.kampkit.db.Beer
 import co.touchlab.kampkit.mock.ClockMock
 import co.touchlab.kampkit.mock.KtorApiMock
-import co.touchlab.kampkit.models.BeerUseCase
+import co.touchlab.kampkit.models.AuthUseCase
 import co.touchlab.kampkit.models.DataState
 import co.touchlab.kampkit.models.ItemDataSummary
 import co.touchlab.kermit.Logger
@@ -24,7 +24,7 @@ import kotlin.time.Duration
 
 class BeerUseCaseTest : BaseTest() {
 
-    private var model: BeerUseCase = BeerUseCase()
+    private var model: AuthUseCase = AuthUseCase()
     private var kermit = Logger
     private var testDbConnection = testDbConnection()
     private var dbHelper = DatabaseHelper(
@@ -74,7 +74,7 @@ class BeerUseCaseTest : BaseTest() {
     @OptIn(FlowPreview::class)
     @Test
     fun updateFavoriteTest() = runTest {
-        ktorApi.prepareResult(ktorApi.successResult())
+        ktorApi.prepareResult(ktorApi.successGetResult())
 
         flowOf(model.refreshBeerIfStale(), model.getBeerFromCache())
             .flattenMerge().test {
@@ -92,7 +92,7 @@ class BeerUseCaseTest : BaseTest() {
     @OptIn(FlowPreview::class)
     @Test
     fun fetchBeersFromNetworkPreserveFavorites() {
-        ktorApi.prepareResult(ktorApi.successResult())
+        ktorApi.prepareResult(ktorApi.successGetResult())
 
         runTest {
             flowOf(model.refreshBeerIfStale(), model.getBeerFromCache())
@@ -125,7 +125,7 @@ class BeerUseCaseTest : BaseTest() {
     @OptIn(FlowPreview::class)
     @Test
     fun updateDatabaseTest() = runTest {
-        val successResult = ktorApi.successResult()
+        val successResult = ktorApi.successGetResult()
         ktorApi.prepareResult(successResult)
         flowOf(model.refreshBeerIfStale(), model.getBeerFromCache()).flattenMerge()
             .test(timeout = Duration.seconds(30)) {
@@ -134,7 +134,7 @@ class BeerUseCaseTest : BaseTest() {
                 val data = oldBeer.data
                 assertTrue(data != null)
                 assertEquals(
-                    ktorApi.successResult().size,
+                    ktorApi.successGetResult().size,
                     data.allItems.size
                 )
             }

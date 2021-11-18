@@ -1,7 +1,7 @@
 package co.touchlab.kampkit
 
 import co.touchlab.kampkit.db.Beer
-import co.touchlab.kampkit.models.BeerUseCase
+import co.touchlab.kampkit.models.AuthUseCase
 import co.touchlab.kampkit.models.DataState
 import co.touchlab.kampkit.models.ItemDataSummary
 import co.touchlab.kermit.Logger
@@ -21,7 +21,7 @@ class NativeViewModel(
 
     private val log: Logger by injectLogger("BreedModel")
     private val scope = MainScope(Dispatchers.Main, log)
-    private val beerUseCase: BeerUseCase = BeerUseCase()
+    private val beerUseCase: AuthUseCase = AuthUseCase()
     private val _beerStateFlow: MutableStateFlow<DataState<ItemDataSummary>> = MutableStateFlow(
         DataState(loading = true)
     )

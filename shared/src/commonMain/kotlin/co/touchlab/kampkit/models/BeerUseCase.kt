@@ -71,7 +71,7 @@ class BeerUseCase : KoinComponent {
 
     suspend fun getBeersFromNetwork(currentTimeMS: Long): DataState<ItemDataSummary> {
         return try {
-            val beerResult = ktorApi.getJsonFromApi()
+            val beerResult = ktorApi.getJsonBeersFromApi()
             log.v { "Breed network result: ${beerResult.isNotEmpty()}" }
             log.v { "Fetched ${beerResult.size} breeds from network" }
             settings.putLong(DB_TIMESTAMP_KEY, currentTimeMS)
