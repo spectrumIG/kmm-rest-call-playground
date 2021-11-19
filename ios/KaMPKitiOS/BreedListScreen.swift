@@ -53,16 +53,21 @@ struct ContentView : View {
     @State var username: String = ""
     @State var password: String = ""
 
-    
-    var body: some View {
-        
+    MainView(username,password)
+
+      
+}
+struct MainView: View {
+username:String
+ var body: some View {
+
         VStack {
             TextField("Username", text: $username)
                 .padding()
                 .background(lightGreyColor)
                 .cornerRadius(5.0)
                 .padding(.bottom, 20)
-                
+
             SecureField("Password", text: $password)
                 .padding()
                 .background(lightGreyColor)
@@ -74,9 +79,7 @@ struct ContentView : View {
         }
         .padding()
     }
-      
 }
-
 #if DEBUG
 struct ContentView_Previews : PreviewProvider {
     static var previews: some View {
