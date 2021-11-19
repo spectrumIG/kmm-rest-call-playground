@@ -49,7 +49,7 @@ private val coreModule = module {
     }
     single<KtorApi> {
         KtorApiImpl(
-            getWith("DogApiImpl")
+            getWith("KMMTestStudy")
         )
     }
     single<Clock> {

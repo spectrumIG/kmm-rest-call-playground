@@ -72,12 +72,16 @@ class KtorApiImpl(log: Logger) : KtorApi {
 
     override suspend fun postAuth(credential: CredentialRequest): NetResponse {
         log.d { "Authenthicate from Artoo" }
+        val postResponse: HttpResponse
+        try {
 
-        val postResponse: HttpResponse =
-            client.post("https://artoo-develop.k8s-facile.it/api/v1/security/session") {
+            postResponse = client.post("https://artoo-develop.k8s-facile.it/api/v1/security/session") {
                 contentType(ContentType.Application.Json)
                 body = UserDto(username = credential.username, password = credential.password)
             }
+        } catch (t: Throwable) {
+            return NetResponse.Error(t.message.orEmpty())
+        }
 
         val dto: UserAuthDto = postResponse.receive()
 
