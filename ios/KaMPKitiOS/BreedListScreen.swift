@@ -12,30 +12,24 @@ import shared
 // swiftlint:disable force_cast
 private let log = koin.loggerWithTag(tag: "ViewController")
 
-class ObservableBeerModel: ObservableObject {
+//TODO: Note that NativeViewModel is wrapped <--
+class ObservableAuthModel: ObservableObject {
     private var viewModel: NativeViewModel?
 
     @Published
     var loading = false
 
     @Published
-    var beers: [Beer]?
+    var userInfo: UserPacketInfo?
 
     @Published
     var error: String?
 
     func activate() {
         viewModel = NativeViewModel { [weak self] dataState in
-            self?.loading = dataState.loading
-            self?.beers = dataState.data?.allItems
-            self?.error = dataState.exception
-
-            if let beers = dataState.data?.allItems {
-                log.d(message: {"View updating with \(beers.count) beers"})
-            }
-            if let errorMessage = dataState.exception {
-                log.e(message: {"Displaying error: \(errorMessage)"})
-            }
+            self?.loading = dataState is ViewState.Loading
+            self?.userInfo = (dataState as? ViewState.AuthSuccess)!.authValue
+            self?.error = (dataState as? ViewState.Error)!.message
         }
     }
 
@@ -44,94 +38,61 @@ class ObservableBeerModel: ObservableObject {
         viewModel = nil
     }
 
-    func onBeerFavorite(_ beer: Beer) {
-        viewModel?.updateBeerFavorite(beer: beer)
+    func onLoginClicked(_ user: String,_ pass: String) {
+        viewModel?.login(user:user,pass:pass)
     }
 
-    func refresh() {
-        viewModel?.refreshBeers(forced: true)
-    }
 }
 
-struct BeerListScreen: View {
+let lightGreyColor = Color(red: 239.0/255.0, green: 243.0/255.0, blue: 244.0/255.0, opacity: 1.0)
+
+struct ContentView : View {
     @ObservedObject
-    var observableModel = ObservableBeerModel()
+    var observableModel = ObservableAuthModel()
 
+    @State var username: String = ""
+    @State var password: String = ""
+
+    
     var body: some View {
-        BeerListContent(
-            loading: observableModel.loading,
-            beers: observableModel.beers,
-            error: observableModel.error,
-            onBeerFavorite: { observableModel.onBeerFavorite($0) },
-            refresh: { observableModel.refresh() }
-        )
-        .onAppear(perform: {
-            observableModel.activate()
-        })
-        .onDisappear(perform: {
-            observableModel.deactivate()
-        })
-    }
-}
-
-struct BeerListContent: View {
-    var loading: Bool
-    var beers: [Beer]?
-    var error: String?
-    var onBeerFavorite: (Beer) -> Void
-    var refresh: () -> Void
-
-    var body: some View {
-        ZStack {
-            VStack {
-                if let beers = beers {
-                    List(beers, id: \.id) { beer in
-                        BeerRowView(beer: beer) {
-                            onBeerFavorite(beer)
-                        }
-                    }
-                }
-                if let error = error {
-                    Text(error)
-                        .foregroundColor(.red)
-                }
-                Button("Refresh") {
-                    refresh()
-                }
-            }
-            if loading { Text("Loading...") }
-        }
-    }
-}
-
-struct BeerRowView: View {
-    var beer: Beer
-    var onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            HStack {
-                Text(beer.name)
-                    .padding(4.0)
-                Spacer()
-                Image(systemName: (beer.favorite == 0) ? "heart" : "heart.fill")
-                    .padding(4.0)
+        
+        VStack {
+            TextField("Username", text: $username)
+                .padding()
+                .background(lightGreyColor)
+                .cornerRadius(5.0)
+                .padding(.bottom, 20)
+                
+            SecureField("Password", text: $password)
+                .padding()
+                .background(lightGreyColor)
+                .cornerRadius(5.0)
+                .padding(.bottom, 20)
+            Button(action: { observableModel.onLoginClicked(username,password)}){
+               LoginButtonContent()
             }
         }
+        .padding()
     }
+      
 }
 
-struct BeerListScreen_Previews: PreviewProvider {
+#if DEBUG
+struct ContentView_Previews : PreviewProvider {
     static var previews: some View {
-        BeerListContent(
-            loading: false,
-            beers: [
-                Beer(id: 0, name: "appenzeller", favorite: 0),
-                Beer(id: 1, name: "australian", favorite: 1)
-            ],
-            error: nil,
-            onBeerFavorite: { _ in },
-            refresh: {}
-        )
+        ContentView()
+    }
+}
+#endif
+
+struct LoginButtonContent : View {
+    var body: some View {
+        return Text("LOGIN")
+            .font(.headline)
+            .foregroundColor(.white)
+            .padding()
+            .frame(width: 220, height: 60)
+            .background(Color.blue)
+            .cornerRadius(15.0)
     }
 }
