@@ -34,7 +34,7 @@ class AuthUseCase : KoinComponent {
                 DataState(
                     AuthDataSummary(
                         UserPacketInfo(
-                            Username(result.dto.username), Email(result.dto.username),
+                            Username(result.dto.username), result.dto.email,
                             Token(result.authToken)
                         )
                     )
@@ -46,7 +46,7 @@ class AuthUseCase : KoinComponent {
 
 data class AuthDataSummary(val userInfo: UserPacketInfo)
 
-data class UserPacketInfo(val username: Username, val email: Email, val token: Token)
+data class UserPacketInfo(val username: Username, val email: String, val token: Token)
 
 @JvmInline
 value class Username(val username: String)
